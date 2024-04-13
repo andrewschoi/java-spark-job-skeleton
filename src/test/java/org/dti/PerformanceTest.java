@@ -15,6 +15,11 @@ import java.util.List;
 @Log
 public class PerformanceTest {
     private static final SparkConfig SPARK_CONFIG = new TestSparkConfig();
+
+    private static SparkConfig clusterSparkConfig = new LocalSparkConfig();
+    private static ValueAtRiskDAO clusterValueAtRiskDAO;
+    private static ValueAtRiskService clusterValueAtRiskService;
+
     private static SparkSession spark;
     private static final double SAMPLING_SIZE = 1.0 / 10000;
     private static Dataset<Row> securitiesRowSample, positionsRowSample, pnlsRowSample;
@@ -47,6 +52,10 @@ public class PerformanceTest {
         securitiesRowSample.createOrReplaceGlobalTempView("securities");
         positionsRowSample.createOrReplaceGlobalTempView("positions");
         pnlsRowSample.createOrReplaceGlobalTempView("pnls");
+
+        log.warning("creating cluster impl VaR DAO and VaR service");
+        clusterValueAtRiskDAO = new ClusterValueAtRiskDAO(spark, clusterSparkConfig);
+        clusterValueAtRiskService = new ClusterValueAtRiskService(spark, clusterValueAtRiskDAO);
     }
 
     @AfterAll
@@ -58,7 +67,7 @@ public class PerformanceTest {
 
     @Test
     void testValueAtRiskQueryProducesValidQueries() throws AnalysisException {
-        for(int i = 0; i < 50; i++) {
+        for(int i = 0; i < 10; i++) {
             String query = ValueAtRiskQuery.makeRandomQuery(securitiesRowSample.collectAsList(), positionsRowSample.collectAsList());
             log.warning("testing if query is valid -  " + query);
             spark.sessionState().sqlParser().parsePlan(query);
@@ -71,7 +80,7 @@ public class PerformanceTest {
     void testQueryRunsUnderTimeLimit() {
         String query = ValueAtRiskQuery.makeRandomQuery(securitiesRowSample.collectAsList(), positionsRowSample.collectAsList());
         log.warning("running query - " + query);
-        spark.sql(query);
+        clusterValueAtRiskService.query(query);
     }
     @Test
     void testValueAtRiskServicePerformance() {

@@ -14,9 +14,9 @@ public class LocalValueAtRiskService implements ValueAtRiskService{
     public LocalValueAtRiskService(SparkSession spark, ValueAtRiskDAO valueAtRiskDAO) throws AnalysisException {
         this.spark = spark;
         this.valueAtRiskDAO = valueAtRiskDAO;
-        this.valueAtRiskDAO.securities().createGlobalTempView("securities");
-        this.valueAtRiskDAO.positions().createGlobalTempView("positions");
-        this.valueAtRiskDAO.pnls().createGlobalTempView("pnls");
+        this.valueAtRiskDAO.securities().createOrReplaceGlobalTempView("securities");
+        this.valueAtRiskDAO.positions().createOrReplaceGlobalTempView("positions");
+        this.valueAtRiskDAO.pnls().createOrReplaceGlobalTempView("pnls");
     }
 
     @Override
