@@ -7,11 +7,24 @@ import org.apache.spark.sql.SparkSession;
 
 @Log
 public class Main {
+    private static final boolean useLocalImpl = true;
     public static void main(String[] args) throws AnalysisException {
-        SparkConfig sparkConfig = new LocalSparkConfig();
-        SparkSession spark = SparkSession.builder().config(sparkConfig.sparkConf()).getOrCreate();
-        ValueAtRiskDAO valueAtRiskDAO = new LocalValueAtRiskDAO(spark, sparkConfig);
-        ValueAtRiskService valueAtRiskService = new LocalValueAtRiskService(spark, valueAtRiskDAO);
+        SparkConfig sparkConfig;
+        SparkSession spark;
+        ValueAtRiskDAO valueAtRiskDAO;
+        ValueAtRiskService valueAtRiskService;
+        if (useLocalImpl) {
+            sparkConfig = new LocalSparkConfig();
+            spark = SparkSession.builder().config(sparkConfig.sparkConf()).getOrCreate();
+            valueAtRiskDAO = new LocalValueAtRiskDAO(spark, sparkConfig);
+            valueAtRiskService = new LocalValueAtRiskService(spark, valueAtRiskDAO);
+        } else {
+            sparkConfig = new ClusterSparkConfig();
+            spark =SparkSession.builder().config(sparkConfig.sparkConf()).getOrCreate();
+            valueAtRiskDAO =new ClusterValueAtRiskDAO(spark, sparkConfig);
+            valueAtRiskService = new ClusterValueAtRiskService(spark, valueAtRiskDAO);
+        }
+
 
         Dataset<Row> result = valueAtRiskService.query("select\n" +
                 "p.desk, p.pod, s.assetclass, percentile_approx(CAST(x.pnl AS DOUBLE), 0.05, 10000)\n\n" +
