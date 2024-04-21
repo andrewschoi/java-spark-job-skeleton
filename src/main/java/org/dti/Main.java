@@ -25,20 +25,25 @@ public class Main {
             valueAtRiskService = new ClusterValueAtRiskService(spark, valueAtRiskDAO);
         }
 
+        long systemTimeStart = System.currentTimeMillis();
 
-        Dataset<Row> result = valueAtRiskService.query("select\n" +
-                "p.desk, p.pod, s.assetclass, percentile_approx(CAST(x.pnl AS DOUBLE), 0.05, 10000)\n\n" +
-                "from\n" +
-                "global_temp.positions p, global_temp.securities s, global_temp.pnls x\n" +
-                "where\n" +
-                "p.securityid = s.securityid and x.securityid = s.securityid\n" +
-                "and p.supervisor = 'Fundamental EQ'\n" +
-                "and s.tradingcountry = 'US'\n" +
-                "group by\n" +
-                "p.desk, p.pod, s.assetclass\n");
-        result.explain();
-        result.show();
-
+        for(int i = 0; i < 1; i++) {
+            Dataset<Row> result = valueAtRiskService.query("select\n" +
+                    "p.desk, p.pod, s.assetclass, percentile_approx(CAST(x.pnl AS DOUBLE), 0.05, 10000)\n\n" +
+                    "from\n" +
+                    "global_temp.positions p, global_temp.securities s, global_temp.pnls x\n" +
+                    "where\n" +
+                    "p.securityid = s.securityid and x.securityid = s.securityid\n" +
+                    "and p.supervisor = 'Fundamental EQ'\n" +
+                    "and s.tradingcountry = 'US'\n" +
+                    "group by\n" +
+                    "p.desk, p.pod, s.assetclass\n");
+        }
+        long systemTimeEnd = System.currentTimeMillis();
+        log.warning("==========================================");
+        log.warning("EXECUTION TIME FOR 10 RANDOM QUERIES");
+        log.warning("==========================================\\n");
+        log.warning(String.valueOf((systemTimeEnd - systemTimeStart) / 1000) + " seconds");
         spark.stop();
     }
 
