@@ -7,7 +7,7 @@ import org.apache.spark.sql.SparkSession;
 
 @Log
 public class Main {
-    private static final boolean useLocalImpl = true;
+    private static final boolean useLocalImpl = false;
     public static void main(String[] args) throws AnalysisException {
         SparkConfig sparkConfig;
         SparkSession spark;

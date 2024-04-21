@@ -14,7 +14,7 @@ public class ClusterSparkConfig implements SparkConfig{
 
     @Override
     public String dataPath() {
-        return "s3://source-4a0f9cbde611d024/";
+        return "s3a://source-ca44c1c8baf68341/";
     }
 
     @Override
